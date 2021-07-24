@@ -10,9 +10,9 @@ class MainWindow(QtWidgets.QMainWindow):
         data = data_retriever.retrieve_data()
 
         line_series = QtCharts.QLineSeries()
+        date_time = QtCore.QDateTime()
 
         for date, value in data.items():
-            date_time = QtCore.QDateTime()
             date = map(int, date.split("-"))
             date_time.setDate(QtCore.QDate(*date))
             line_series.append(date_time.toMSecsSinceEpoch(), value)
