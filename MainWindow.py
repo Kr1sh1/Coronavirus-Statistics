@@ -1,14 +1,27 @@
-from PySide6 import QtWidgets, QtCore
+from StatisticsRetriever import StatisticsRetriever
+from PySide6 import QtWidgets, QtCore, QtCharts
 
-class MainWindow(QtWidgets.QWidget):
-    def __init__(self):
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self) -> None:
         super().__init__()
 
-        self.layout = QtWidgets.QGridLayout(self)
-        self.layout.setAlignment(QtCore.Qt.AlignCenter)
-        
-        self.label = QtWidgets.QLabel("Hello World")
-        
-        self.layout.addWidget(self.label)
+        data_retriever = StatisticsRetriever()
+        data_retriever.refresh_data()
+        data = data_retriever.retrieve_data()
 
-        #self.label.setAlignment(QtCore.Qt.AlignBottom)
+        line_series = QtCharts.QLineSeries()
+
+        for date, value in data.items():
+            date_time = QtCore.QDateTime()
+            date = map(int, date.split("-"))
+            date_time.setDate(QtCore.QDate(*date))
+            line_series.append(date_time.toMSecsSinceEpoch(), value)
+
+        chart_view = QtCharts.QChartView()
+        chart_view.chart().addSeries(line_series)
+
+        axisX = QtCharts.QDateTimeAxis()
+        axisX.setFormat("MM-yyyy")
+
+        chart_view.chart().setAxisX(axisX, line_series)
+        self.setCentralWidget(chart_view)
