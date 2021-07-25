@@ -1,3 +1,7 @@
+import operator
+import math
+
+from PySide6.QtGui import QColor
 from StatisticsRetriever import StatisticsRetriever
 from PySide6 import QtWidgets, QtCore, QtCharts
 
@@ -19,9 +23,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
         chart_view = QtCharts.QChartView()
         chart_view.chart().addSeries(line_series)
+        chart_view.chart().setTheme(chart_view.chart().ChartThemeDark)
 
-        axisX = QtCharts.QDateTimeAxis()
-        axisX.setFormat("MM-yyyy")
+        max_daily_cases = max(data.items(), key=operator.itemgetter(1))[1]
+        tick_count = 10
 
-        chart_view.chart().setAxisX(axisX, line_series)
+        axis_y = QtCharts.QValueAxis()
+
+        # tick interval code from here: https://stackoverflow.com/a/326746
+        unroundedTickSize = max_daily_cases/(tick_count-1);
+        x = math.ceil(math.log10(unroundedTickSize)-1);
+        pow10x = math.pow(10, x);
+        roundedTickRange = math.ceil(unroundedTickSize / pow10x) * pow10x;
+        
+        axis_y.setTickInterval(roundedTickRange)
+        axis_y.setTickType(QtCharts.QValueAxis.TicksDynamic)
+        axis_y.setGridLineVisible(True)
+        axis_y.setGridLineColor(QColor(255, 0, 0))
+        
+        axis_x = QtCharts.QDateTimeAxis()
+        axis_x.setFormat("MM-yyyy")
+
+        chart_view.chart().setAxisX(axis_x, line_series)
+        chart_view.chart().setAxisY(axis_y, line_series)
         self.setCentralWidget(chart_view)
